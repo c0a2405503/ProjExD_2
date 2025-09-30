@@ -26,12 +26,12 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
     戻り値：判定結果タプル（横方向，縦方向）
     画面内ならTrue／画面外ならFalse
     """
-    beside, vertical = True, True
+    horintql, vertical = True, True
     if rct.left < 0 or WIDTH < rct.right:
-        beside = False
+        horintql = False
     if rct.top < 0 or HEIGHT < rct.bottom:
-        vertical = False
-    return beside, vertical
+        horintql = False
+    return horintql, vertical
 
 
 def game_over(screen: pg.Surface):
