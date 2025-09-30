@@ -26,12 +26,27 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
     戻り値：判定結果タプル（横方向，縦方向）
     画面内ならTrue／画面外ならFalse
     """
-    horintql, vertical = True, True
+    # ★修正: 境界チェック関数を復元し、正しいロジックを適用
+    yoko, tate = True, True
     if rct.left < 0 or WIDTH < rct.right:
-        horintql = False
+        yoko = False
     if rct.top < 0 or HEIGHT < rct.bottom:
-        horintql = False
-    return horintql, vertical
+        tate = False
+    return yoko, tate
+
+
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    
+    bb_imgs: list[pg.Surface] = []
+    for r in range(1, 11):
+        bb_img = pg.Surface((20*r, 20*r))
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+        bb_img.set_colorkey((0, 0, 0))
+        bb_imgs.append(bb_img)
+
+    bb_accs: list[int] = [a for a in range(1, 11)]
+
+    return bb_imgs, bb_accs
 
 
 def game_over(screen: pg.Surface):
@@ -59,24 +74,8 @@ def game_over(screen: pg.Surface):
     time.sleep(5)
 
 
-def prep_bombs() -> tuple[list, list]:
-
-    bb_imgs = []
-    for r in range(1, 11):
-
-        bb_img = pg.Surface((20*r, 20*r))
-
-        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
-        bb_img.set_colorkey((0, 0, 0))
-        bb_imgs.append(bb_img)
-
-    bb_accs = [a for a in range(1, 11)]
-
-    return bb_imgs, bb_accs
-
-
 def main():
-    
+
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/pg_bg.jpg")
@@ -84,7 +83,7 @@ def main():
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
 
-    bb_imgs, bb_accs = prep_bombs()
+    bb_imgs, bb_accs = init_bb_imgs()
 
     bb_img = bb_imgs[0]
     bb_rct = bb_img.get_rect()
@@ -112,6 +111,7 @@ def main():
                 sum_mv[1] += mv[1]
 
         kk_rct.move_ip(sum_mv)
+      
         if check_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
         screen.blit(kk_img, kk_rct)
@@ -122,11 +122,12 @@ def main():
         avy = vy * bb_accs[level]
 
         bb_rct.move_ip(avx, avy)
-        beside, vertical = check_bound(bb_rct)
 
-        if not beside:
+        yoko, tate = check_bound(bb_rct) 
+
+        if not yoko:
             vx *= -1
-        if not vertical:
+        if not tate:
             vy *= -1
 
         current_bb_img = bb_imgs[level]
